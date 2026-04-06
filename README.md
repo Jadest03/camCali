@@ -24,7 +24,7 @@ K = \begin{bmatrix}
 \end{bmatrix}
 $$
 
-* **Focal Length ($f_y, f_y$)**: `1922.62`, `1926.59`
+* **Focal Length ($f_x, f_y$)**: `1922.62`, `1926.59`
 * **Principal Point ($c_x, c_y$)**: `1091.79`, `1908.49`
 
 ### 3. Distortion Coefficients ($D$)
