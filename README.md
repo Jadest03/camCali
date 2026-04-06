@@ -13,7 +13,6 @@ The calibration was conducted using a $9 \times 6$ chessboard pattern with a $20
 
 ### 1. Accuracy Metric
 * **Root Mean Square Error (RMSE)**: `0.99435`
-> **Analysis**: An RMSE below $1.0$ confirms that the estimated parameters accurately represent the physical camera geometry with minimal pixel-level error.
 
 ### 2. Intrinsic Camera Matrix ($K$)
 The intrinsic matrix encapsulates the focal length and optical center (principal point) of the lens:
@@ -34,7 +33,6 @@ Derived coefficients to compensate for radial and tangential lens artifacts:
 
 The following demonstration highlights the transition from a distorted wide-angle perspective to a rectified linear perspective. 
 
-| Original (Distorted) | Rectified (Undistorted) |
+| Original (Distorted) | Rectified (Undistorted)|
 | ![Result](./result.png)|
 
-> **Note**: As seen in the comparison, the "barrel distortion" common in wide-angle lenses is successfully eliminated, restoring the straight lines of the chessboard.
