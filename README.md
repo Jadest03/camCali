@@ -9,7 +9,7 @@ A robust computer vision tool designed to estimate intrinsic camera parameters a
 
 ## 📊 Calibration Performance
 
-The calibration was conducted using a $9 \times 6$ chessboard pattern with a $20\text{mm}$ cell size. 
+The calibration was conducted using a $13 \times 9$ chessboard pattern with a $20\text{mm}$ cell size. 
 
 ### 1. Accuracy Metric
 **Root Mean Square Error (RMSE)**: `0.99435` 
