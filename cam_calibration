@@ -17,7 +17,7 @@ class LensCalibrator:
             print(f"Error: {source_path}를 열 수 없습니다.")
             return
 
-        print(">>> [Space]: 캡처 | [ESC]: 선택 완료 및 계산 시작")
+        print("[Space]: 캡처 | [ESC]: 선택 완료 및 계산 시작")
         
         while True:
             success, frame = stream.read()
@@ -77,7 +77,6 @@ class LensCalibrator:
         return error, mtx, dist
 
 if __name__ == "__main__":
-    # 설정값 (민규님의 데이터에 맞게 수정됨)
     TARGET_VIDEO = "data.MOV"
     CHESS_PATTERN = (13, 9) # 내부 코너 기준 
     SQUARE_SIZE = 0.020    # 20mm 
