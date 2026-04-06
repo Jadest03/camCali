@@ -1,0 +1,99 @@
+import cv2
+import numpy as np
+
+class LensCalibrator:
+    def __init__(self, pattern_size, cell_dist):
+        self.pattern = pattern_size
+        self.cell_size = cell_dist
+        self.captured_frames = []
+        
+        self.obj_p = np.zeros((pattern_size[0] * pattern_size[1], 3), np.float32)
+        self.obj_p[:, :2] = np.mgrid[0:pattern_size[0], 0:pattern_size[1]].T.reshape(-1, 2)
+        self.obj_p *= self.cell_size
+
+    def collect_samples(self, source_path):
+        stream = cv2.VideoCapture(source_path)
+        if not stream.isOpened():
+            print(f"Error: {source_path}를 열 수 없습니다.")
+            return
+
+        print(">>> [Space]: 캡처 | [ESC]: 선택 완료 및 계산 시작")
+        
+        while True:
+            success, frame = stream.read()
+            if not success:
+                break
+
+            display = frame.copy()
+            cv2.imshow("Calibration Gallery", display)
+            
+            input_key = cv2.waitKey(15) & 0xFF
+            
+            if input_key == 27: # ESC
+                break
+            elif input_key == ord(' '): # Space
+                is_found, corners = cv2.findChessboardCorners(frame, self.pattern, None)
+                
+                if is_found:
+                    self.captured_frames.append(frame)
+                    cv2.drawChessboardCorners(display, self.pattern, corners, is_found)
+                    cv2.imshow("Calibration Gallery", display)
+                    print(f"Captured: {len(self.captured_frames)} images")
+                    cv2.waitKey(400)
+                else:
+                    print("보드를 찾지 못했습니다. 각도를 조절하세요.")
+
+        stream.release()
+        cv2.destroyAllWindows()
+
+    def run_optimization(self):
+        """
+        수집된 데이터를 바탕으로 최종 캘리브레이션 수행
+        """
+        if not self.captured_frames:
+            print("데이터가 부족합니다.")
+            return
+
+        point_2d = []
+        point_3d = []
+        
+        refine_criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 40, 0.001)
+
+        for img in self.captured_frames:
+            gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            ret, corners = cv2.findChessboardCorners(gray_img, self.pattern, None)
+            
+            if ret:
+                # 정밀도 보정
+                refined_corners = cv2.cornerSubPix(gray_img, corners, (11, 11), (-1, -1), refine_criteria)
+                point_2d.append(refined_corners)
+                point_3d.append(self.obj_p)
+
+        # OpenCV 캘리브레이션 실행
+        error, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(
+            point_3d, point_2d, gray_img.shape[::-1], None, None
+        )
+        
+        return error, mtx, dist
+
+if __name__ == "__main__":
+    # 설정값 (민규님의 데이터에 맞게 수정됨)
+    TARGET_VIDEO = "data.MOV"
+    CHESS_PATTERN = (13, 9) # 내부 코너 기준 
+    SQUARE_SIZE = 0.020    # 20mm 
+
+    engine = LensCalibrator(CHESS_PATTERN, SQUARE_SIZE)
+    
+    engine.collect_samples(TARGET_VIDEO)
+    
+    if len(engine.captured_frames) > 0:
+        rmse, K, distortion = engine.run_optimization()
+        
+        print("\n" + "="*35)
+        print(f"Optimization RMSE: {rmse:.5f}")
+        print("-" * 35)
+        print(f"Intrinsic Matrix (K):\n{K}")
+        print(f"Distortion Coeffs (D):\n{distortion.flatten()}")
+        print("="*35)
+    else:
+        print("작업이 취소되었습니다.")
